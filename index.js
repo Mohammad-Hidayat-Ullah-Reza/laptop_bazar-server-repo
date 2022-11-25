@@ -23,6 +23,9 @@ async function run() {
     const servicesCollection = client.db("laptopBazar").collection("services");
     const blogCollection = client.db("laptopBazar").collection("blog");
     const usersCollection = client.db("laptopBazar").collection("users");
+    const fakeLaptopCollection = client
+      .db("laptopBazar")
+      .collection("fakeLaptop");
 
     app.get("/services", async (req, res) => {
       const query = {};
@@ -36,6 +39,14 @@ async function run() {
       const cursor = blogCollection.find(query);
       const blog = await cursor.toArray();
       res.send(blog);
+    });
+
+    app.get("/categories/:category", async (req, res) => {
+      const category = req.params.category;
+      const result = await fakeLaptopCollection
+        .find({ category: category })
+        .toArray();
+      res.send(result);
     });
 
     app.post("/users", async (req, res) => {
