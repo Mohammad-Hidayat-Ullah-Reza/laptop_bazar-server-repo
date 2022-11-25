@@ -20,12 +20,20 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const servicesCollection = client.db("laptopBazar").collection("services");
+    const blogCollection = client.db("laptopBazar").collection("blog");
 
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = servicesCollection.find(query);
       const services = await cursor.toArray();
       res.send(services);
+    });
+
+    app.get("/blog", async (req, res) => {
+      const query = {};
+      const cursor = blogCollection.find(query);
+      const blog = await cursor.toArray();
+      res.send(blog);
     });
   } finally {
   }
