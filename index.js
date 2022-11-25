@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const app = express();
@@ -21,6 +22,7 @@ async function run() {
   try {
     const servicesCollection = client.db("laptopBazar").collection("services");
     const blogCollection = client.db("laptopBazar").collection("blog");
+    const usersCollection = client.db("laptopBazar").collection("users");
 
     app.get("/services", async (req, res) => {
       const query = {};
@@ -34,6 +36,13 @@ async function run() {
       const cursor = blogCollection.find(query);
       const blog = await cursor.toArray();
       res.send(blog);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
     });
   } finally {
   }
