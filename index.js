@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -26,6 +26,9 @@ async function run() {
     const fakeLaptopCollection = client
       .db("laptopBazar")
       .collection("fakeLaptop");
+    const fakeMyOrdersCollection = client
+      .db("laptopBazar")
+      .collection("fakeMyOrders");
 
     app.get("/services", async (req, res) => {
       const query = {};
@@ -49,9 +52,33 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/myOrders", async (req, res) => {
+      const myOrders = await fakeMyOrdersCollection.insertOne(req.body);
+      res.send(myOrders);
+    });
+
+    app.put("/booked/:id", async (req, res) => {
+      const booked = req.body.booked;
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          booked: booked,
+        },
+      };
+      console.log(updateDoc);
+      const result = await fakeLaptopCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
-      console.log(user);
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
