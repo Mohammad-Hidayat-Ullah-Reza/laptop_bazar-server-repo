@@ -83,15 +83,28 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/user", async (req, res) => {
-      const email = req.body;
-      const result = await usersCollection.findOne(email);
-      res.send(result);
-    });
+    // app.get("/user", async (req, res) => {
+    //   const email = req.body;
+    //   const result = await usersCollection.findOne(email).toArray();
+    //   res.send(result);
+    // });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/users/:role", async (req, res) => {
+      const role = req.params.role;
+      const result = await usersCollection.find({ role }).toArray();
+      res.send(result);
+    });
+
+    app.get("/users/buyer/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await usersCollection.find({ email }).toArray();
       res.send(result);
     });
   } finally {
