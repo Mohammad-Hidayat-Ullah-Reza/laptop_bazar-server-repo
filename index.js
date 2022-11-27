@@ -95,6 +95,12 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/users", async (req, res) => {
+      const id = req.body.id;
+      const result = await usersCollection.deleteOne({ _id: ObjectId(id) });
+      res.send(result);
+    });
+
     app.get("/users/:role", async (req, res) => {
       const role = req.params.role;
       const result = await usersCollection.find({ role }).toArray();
@@ -103,7 +109,6 @@ async function run() {
 
     app.get("/users/buyer/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
       const result = await usersCollection.find({ email }).toArray();
       res.send(result);
     });
