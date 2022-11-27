@@ -52,6 +52,14 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/myOrders", async (req, res) => {
+      const buyerEmail = req.query.buyerEmail;
+      const result = await fakeMyOrdersCollection
+        .find({ buyerEmail: buyerEmail })
+        .toArray();
+      res.send(result);
+    });
+
     app.post("/myOrders", async (req, res) => {
       const myOrders = await fakeMyOrdersCollection.insertOne(req.body);
       res.send(myOrders);
@@ -60,7 +68,6 @@ async function run() {
     app.put("/booked/:id", async (req, res) => {
       const booked = req.body.booked;
       const id = req.params.id;
-      console.log(id);
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
@@ -68,12 +75,17 @@ async function run() {
           booked: booked,
         },
       };
-      console.log(updateDoc);
       const result = await fakeLaptopCollection.updateOne(
         filter,
         updateDoc,
         options
       );
+      res.send(result);
+    });
+
+    app.get("/user", async (req, res) => {
+      const email = req.body;
+      const result = await usersCollection.findOne(email);
       res.send(result);
     });
 
