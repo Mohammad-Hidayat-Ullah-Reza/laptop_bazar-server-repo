@@ -52,6 +52,24 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/allLaptops", async (req, res) => {
+      const email = req.query.email;
+
+      const result = await fakeLaptopCollection
+        .find({ seller_email: email })
+        .toArray();
+      res.send(result);
+    });
+
+    app.delete("/allLaptops", async (req, res) => {
+      const id = req.body.laptopId;
+      console.log(id);
+      const result = await fakeLaptopCollection.deleteOne({
+        _id: ObjectId(id),
+      });
+      res.send(result);
+    });
+
     app.post("/addLaptop", async (req, res) => {
       const addLaptopInfo = req.body;
       const result = await fakeLaptopCollection.insertOne(addLaptopInfo);
@@ -72,11 +90,27 @@ async function run() {
     });
 
     app.get("/myProducts", async (req, res) => {
-      const sellerEmail = req.query.sellerEmail;
-      console.log(sellerEmail);
-      const query = { sellerEmail: sellerEmail };
-      const result = await fakeLaptopCollection.find(query).toArray();
-      // const result = await cursor.toArray();
+      const filter = req.query;
+      console.log(filter);
+      const result = await fakeLaptopCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.put("/myProducts/:id", async (req, res) => {
+      const advertise = req.body.advertise;
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          advertise,
+        },
+      };
+      const result = await fakeLaptopCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
 
