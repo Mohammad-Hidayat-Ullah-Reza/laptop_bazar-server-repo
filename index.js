@@ -18,6 +18,21 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send("unauthorized access");
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 async function run() {
   try {
     const servicesCollection = client.db("laptopBazar").collection("services");
@@ -63,7 +78,7 @@ async function run() {
 
     app.delete("/allLaptops", async (req, res) => {
       const id = req.body.laptopId;
-      console.log(id);
+
       const result = await fakeLaptopCollection.deleteOne({
         _id: ObjectId(id),
       });
@@ -91,7 +106,7 @@ async function run() {
 
     app.get("/myProducts", async (req, res) => {
       const filter = req.query;
-      console.log(filter);
+
       const result = await fakeLaptopCollection.find(filter).toArray();
       res.send(result);
     });
@@ -137,6 +152,26 @@ async function run() {
     //   const result = await usersCollection.findOne(email).toArray();
     //   res.send(result);
     // });
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: "1h",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "" });
+    });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
