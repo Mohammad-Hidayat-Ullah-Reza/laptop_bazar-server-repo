@@ -52,6 +52,12 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/addLaptop", async (req, res) => {
+      const addLaptopInfo = req.body;
+      const result = await fakeLaptopCollection.insertOne(addLaptopInfo);
+      res.send(result);
+    });
+
     app.get("/myOrders", async (req, res) => {
       const buyerEmail = req.query.buyerEmail;
       const result = await fakeMyOrdersCollection
@@ -63,6 +69,15 @@ async function run() {
     app.post("/myOrders", async (req, res) => {
       const myOrders = await fakeMyOrdersCollection.insertOne(req.body);
       res.send(myOrders);
+    });
+
+    app.get("/myProducts", async (req, res) => {
+      const sellerEmail = req.query.sellerEmail;
+      console.log(sellerEmail);
+      const query = { sellerEmail: sellerEmail };
+      const result = await fakeLaptopCollection.find(query).toArray();
+      // const result = await cursor.toArray();
+      res.send(result);
     });
 
     app.put("/booked/:id", async (req, res) => {
@@ -98,6 +113,24 @@ async function run() {
     app.delete("/users", async (req, res) => {
       const id = req.body.id;
       const result = await usersCollection.deleteOne({ _id: ObjectId(id) });
+      res.send(result);
+    });
+
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const verified = req.body.verified;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          verified,
+        },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
 
