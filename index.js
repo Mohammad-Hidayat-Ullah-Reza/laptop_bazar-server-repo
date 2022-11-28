@@ -9,7 +9,7 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-jwt;
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.dp8wnte.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -85,23 +85,33 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/addLaptop", async (req, res) => {
+    app.post("/addLaptop", verifyJWT, async (req, res) => {
       const addLaptopInfo = req.body;
-
+      const decodedEmail = req.decoded.email;
+      if (addLaptopInfo.seller_email !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const result = await allLaptopCollection.insertOne(addLaptopInfo);
       res.send(result);
     });
 
-    app.get("/myOrders", async (req, res) => {
+    app.get("/myOrders", verifyJWT, async (req, res) => {
       const buyerEmail = req.query.buyerEmail;
-
+      const decodedEmail = req.decoded.email;
+      if (req.body.buyerEmail !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const result = await allMyOrdersCollection
         .find({ buyerEmail: buyerEmail })
         .toArray();
       res.send(result);
     });
 
-    app.post("/myOrders", async (req, res) => {
+    app.post("/myOrders", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      if (req.body.buyerEmail !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const myOrders = await allMyOrdersCollection.insertOne(req.body);
       res.send(myOrders);
     });
