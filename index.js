@@ -85,21 +85,33 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/addLaptop", async (req, res) => {
+    app.post("/addLaptop", verifyJWT, async (req, res) => {
       const addLaptopInfo = req.body;
+      const decodedEmail = req.decoded.email;
+      if (addLaptopInfo.seller_email !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const result = await allLaptopCollection.insertOne(addLaptopInfo);
       res.send(result);
     });
 
-    app.get("/myOrders", async (req, res) => {
+    app.get("/myOrders", verifyJWT, async (req, res) => {
       const buyerEmail = req.query.buyerEmail;
+      const decodedEmail = req.decoded.email;
+      if (req.body.buyerEmail !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const result = await allMyOrdersCollection
         .find({ buyerEmail: buyerEmail })
         .toArray();
       res.send(result);
     });
 
-    app.post("/myOrders", async (req, res) => {
+    app.post("/myOrders", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      if (req.body.buyerEmail !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const myOrders = await allMyOrdersCollection.insertOne(req.body);
       res.send(myOrders);
     });
@@ -212,6 +224,7 @@ async function run() {
 
     app.put("/allLaptop/:email", async (req, res) => {
       const email = req.params.email;
+
       const filter = { seller_email: email };
       const verified = req.body.verified;
       const options = { upsert: true };
