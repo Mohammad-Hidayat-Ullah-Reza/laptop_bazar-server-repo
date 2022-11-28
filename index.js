@@ -38,12 +38,12 @@ async function run() {
     const servicesCollection = client.db("laptopBazar").collection("services");
     const blogCollection = client.db("laptopBazar").collection("blog");
     const usersCollection = client.db("laptopBazar").collection("users");
-    const fakeLaptopCollection = client
+    const allLaptopCollection = client
       .db("laptopBazar")
-      .collection("fakeLaptop");
-    const fakeMyOrdersCollection = client
+      .collection("allLaptop");
+    const allMyOrdersCollection = client
       .db("laptopBazar")
-      .collection("fakeMyOrders");
+      .collection("allOrders");
 
     app.get("/services", async (req, res) => {
       const query = {};
@@ -61,7 +61,7 @@ async function run() {
 
     app.get("/categories/:category", async (req, res) => {
       const category = req.params.category;
-      const result = await fakeLaptopCollection
+      const result = await allLaptopCollection
         .find({ category: category })
         .toArray();
       res.send(result);
@@ -70,7 +70,7 @@ async function run() {
     app.get("/allLaptops", async (req, res) => {
       const email = req.query.email;
 
-      const result = await fakeLaptopCollection
+      const result = await allLaptopCollection
         .find({ seller_email: email })
         .toArray();
       res.send(result);
@@ -79,7 +79,7 @@ async function run() {
     app.delete("/allLaptops", async (req, res) => {
       const id = req.body.laptopId;
 
-      const result = await fakeLaptopCollection.deleteOne({
+      const result = await allLaptopCollection.deleteOne({
         _id: ObjectId(id),
       });
       res.send(result);
@@ -87,27 +87,27 @@ async function run() {
 
     app.post("/addLaptop", async (req, res) => {
       const addLaptopInfo = req.body;
-      const result = await fakeLaptopCollection.insertOne(addLaptopInfo);
+      const result = await allLaptopCollection.insertOne(addLaptopInfo);
       res.send(result);
     });
 
     app.get("/myOrders", async (req, res) => {
       const buyerEmail = req.query.buyerEmail;
-      const result = await fakeMyOrdersCollection
+      const result = await allMyOrdersCollection
         .find({ buyerEmail: buyerEmail })
         .toArray();
       res.send(result);
     });
 
     app.post("/myOrders", async (req, res) => {
-      const myOrders = await fakeMyOrdersCollection.insertOne(req.body);
+      const myOrders = await allMyOrdersCollection.insertOne(req.body);
       res.send(myOrders);
     });
 
     app.get("/myProducts", async (req, res) => {
       const filter = req.query;
 
-      const result = await fakeLaptopCollection.find(filter).toArray();
+      const result = await allLaptopCollection.find(filter).toArray();
       res.send(result);
     });
 
@@ -121,7 +121,7 @@ async function run() {
           advertise,
         },
       };
-      const result = await fakeLaptopCollection.updateOne(
+      const result = await allLaptopCollection.updateOne(
         filter,
         updateDoc,
         options
@@ -139,7 +139,7 @@ async function run() {
           booked: booked,
         },
       };
-      const result = await fakeLaptopCollection.updateOne(
+      const result = await allLaptopCollection.updateOne(
         filter,
         updateDoc,
         options
@@ -203,6 +203,24 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    app.put("/allLaptop/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { seller_email: email };
+      const verified = req.body.verified;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          seller_verified: verified,
+        },
+      };
+      const result = await allLaptopCollection.updateMany(
         filter,
         updateDoc,
         options
